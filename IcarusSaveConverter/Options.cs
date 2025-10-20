@@ -29,11 +29,14 @@ namespace IcarusSaveConverter
 
 		public string PartsPath { get; }
 
-		private Options(ProgramMode action, string prospectPath, string partsPath)
+		public bool UseActorId { get; }
+
+		private Options(ProgramMode action, string prospectPath, string partsPath, bool useActorId)
 		{
 			Action = action;
 			ProspectPath = prospectPath;
 			PartsPath = partsPath;
+			UseActorId = useActorId;
 		}
 
 		/// <summary>
@@ -43,33 +46,59 @@ namespace IcarusSaveConverter
 		{
 			options = null;
 
-			if (args.Length != ExpectedArgCount)
+			if (args.Length < ExpectedArgCount)
 			{
 				return false;
 			}
 
-			ProgramMode action;
-			if (!Enum.TryParse(args[0], true, out action))
+			ProgramMode? action = null;
+			string? prospectPath = null;
+			string? partsPath = null;
+
+			bool useActorId = false;
+
+			int positionalIndex = 0;
+			for (int i = 0; i < args.Length; ++i)
 			{
-				logger.Error($"Unrecognized action: {args[0]}");
+				if (args[i].StartsWith("--"))
+				{
+					string option = args[i][2..].ToLowerInvariant();
+					switch (option)
+					{
+						case "use-actor-id":
+							useActorId = true;
+							break;
+					}
+				}
+				else
+				{
+					switch (positionalIndex)
+					{
+						case 0:
+							if (Enum.TryParse(args[i], true, out ProgramMode value))
+							{
+								action = value;
+							}
+							break;
+						case 1:
+							prospectPath = ParsePath(args[i], logger);
+							break;
+						case 2:
+							partsPath = ParsePath(args[i], logger);
+							break;
+					}
+
+					++positionalIndex;
+				}
+			}
+
+			if (!action.HasValue || prospectPath is null || partsPath is null)
+			{
+				logger.Error("Error parsing arguments");
 				return false;
 			}
 
-			string? prospectPath = ParsePath(args[1], logger);
-			if (prospectPath is null)
-			{
-				logger.Error($"Invalid prospect path: {args[1]}");
-				return false;
-			}
-
-			string? partsPath = ParsePath(args[2], logger);
-			if (partsPath is null)
-			{
-				logger.Error($"Invalid parts path: {args[2]}");
-				return false;
-			}
-
-			options = new(action, prospectPath, partsPath);
+			options = new(action.Value, prospectPath, partsPath, useActorId);
 			return true;
 		}
 
@@ -77,7 +106,7 @@ namespace IcarusSaveConverter
 		{
 			logger.Information(
 				"Converts an Icarus propect save file to or from a text-based format\n" +
-				"Usage: IcarusSaveConverter [action] [prospect] [parts]\n" +
+				"Usage: IcarusSaveConverter [action] [prospect] [parts] [[options]]\n" +
 				"\n" +
 				"  action    The action to perform. Must be one of the following.\n" +
 				"            unpack: Unpack and convert the prospect file to text.\n" +
@@ -87,7 +116,18 @@ namespace IcarusSaveConverter
 				"            on the specified action.\n" +
 				"\n" +
 				"  parts     The path to a directory of unpacked prospect parts that will\n" +
-				"            either be created or read depending on the specified action."
+				"            either be created or read depending on the specified action.\n" +
+				"\n" +
+				"Options\n" +
+				"\n" +
+				"  --use-actor-id  File names of recorders will use the actor ID as a prefix\n" +
+				"                  instead of the recorder index. This is useful for diffing\n" +
+				"                  the output of two versions of the same prospect, but is\n" +
+				"                  not recommended for editing and recombining the save. The\n" +
+				"                  order of recorders will change, and actors with duplicate\n" +
+				"                  IDs will be missing.\n" +
+				"                  (Actors without an ID will use the prefix \"_\" followed by\n" +
+				"                  the recorder index.)"
 				);
 		}
 

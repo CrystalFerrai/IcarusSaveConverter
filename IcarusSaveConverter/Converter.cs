@@ -34,7 +34,7 @@ namespace IcarusSaveConverter
 			switch (options.Action)
 			{
 				case ProgramMode.Unpack:
-					return SplitSave(options.ProspectPath, options.PartsPath, logger);
+					return SplitSave(options.ProspectPath, options.PartsPath, options.UseActorId, logger);
 				case ProgramMode.Pack:
 					return CombineSave(options.PartsPath, options.ProspectPath, logger);
 				default:
@@ -43,7 +43,7 @@ namespace IcarusSaveConverter
 			}
 		}
 
-		private static int SplitSave(string inPath, string partsPath, Logger logger)
+		private static int SplitSave(string inPath, string partsPath, bool useActorId, Logger logger)
 		{
 			logger.Information("Loading prospect...");
 
@@ -148,7 +148,26 @@ namespace IcarusSaveConverter
 					FString recorderName = (FString)recorderStruct.Properties[0].Property!.Value!;
 					IList<FPropertyTag> recorderProperties = ProspectSerlializationUtil.DeserializeRecorderData(recorderStruct.Properties[1]);
 
-					using (FileStream stream = File.Create(Path.Combine(recordersPath, $"{i.ToString().PadLeft(digitCount, '0')}_{Path.GetFileName(recorderName)}.json")))
+					string prefix;
+					if (useActorId)
+					{
+						IntProperty? actorGuidProperty = recorderProperties.FirstOrDefault(p => p.Name.Equals("IcarusActorGUID"))?.Property as IntProperty;
+						if (actorGuidProperty is not null)
+						{
+							prefix = actorGuidProperty.Value.ToString().PadLeft(7, '0');
+						}
+						else
+						{
+							logger.Debug($"Recorder at index {i} is missing an IcarusActorGUID property");
+							prefix = "_" + i.ToString().PadLeft(digitCount, '0');
+						}
+					}
+					else
+					{
+						prefix = i.ToString().PadLeft(digitCount, '0');
+					}
+
+					using (FileStream stream = File.Create(Path.Combine(recordersPath, $"{prefix}_{Path.GetFileName(recorderName)}.json")))
 					using (StreamWriter writer = new(stream))
 					using (JsonWriter jsonWriter = new JsonTextWriter(writer) { Formatting = Formatting.Indented, IndentChar = ' ', Indentation = 2 })
 					{

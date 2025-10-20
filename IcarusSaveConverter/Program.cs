@@ -20,7 +20,7 @@ namespace IcarusSaveConverter
 		{
 			Logger logger = new ConsoleLogger();
 
-			if (args.Length != Options.ExpectedArgCount)
+			if (args.Length < Options.ExpectedArgCount)
 			{
 				Options.PrintUsage(logger);
 				return OnExit(0);
