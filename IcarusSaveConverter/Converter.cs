@@ -167,7 +167,14 @@ namespace IcarusSaveConverter
 						prefix = i.ToString().PadLeft(digitCount, '0');
 					}
 
-					using (FileStream stream = File.Create(Path.Combine(recordersPath, $"{prefix}_{Path.GetFileName(recorderName)}.json")))
+					string basePath = Path.Combine(recordersPath, $"{prefix}_{Path.GetFileName(recorderName)}");
+					string outPath = $"{basePath}.json";
+					for (int j = 0; File.Exists(outPath); ++j)
+					{
+						outPath = $"{basePath}_{j:00}.json";
+					}
+
+					using (FileStream stream = File.Open(outPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
 					using (StreamWriter writer = new(stream))
 					using (JsonWriter jsonWriter = new JsonTextWriter(writer) { Formatting = Formatting.Indented, IndentChar = ' ', Indentation = 2 })
 					{
