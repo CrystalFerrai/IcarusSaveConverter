@@ -1,6 +1,6 @@
 # IcarusSaveConverter
 
-A command line program that converts Icarus prospect save files to and from human editable json files.
+A command line program that converts Icarus prospect and mounts save files to and from human editable json files.
 
 ## Releases
 
@@ -14,36 +14,36 @@ Prerequisite: You should have some familiarity with using command line programs 
 
 **BACKUP YOUR SAVE FILES BEFORE USING THIS PROGRAM.** If something goes wrong, there is no way to recover your save unless you have a backup.
 
-### Step 1: Unpack a prospect save file into a directory of parts
+### Step 1: Unpack a prospect or mounts save file into a directory of parts
 
-This will output a directory full of json files containing all of the prospect save data converted into an editable format.
+This will output a directory full of json files containing all of the save data converted into an editable format.
 ```
-IcarusSaveConverter unpack path\to\prospectfile.json path\to\outputfolder
+IcarusSaveConverter unpack path\to\savefile.json path\to\outputfolder
 ```
 
 ### Step 2: Make changes to the unpacked files
 
 Using a text editor, make any changes you want to any of the unpacked files. Be careful that you do not break the json formatting of the files.
 
-### Step 3: Convert the unpacked files back into a prospect save file
+### Step 3: Convert the unpacked files back into a save file
 
 This will replace the specified save file with the modified one. Make sure you backed up the original first!
 ```
-IcarusSaveConverter pack path\to\prospectfile.json path\to\outputfolder
+IcarusSaveConverter pack path\to\savefile.json path\to\outputfolder
 ```
 
 ### More options
 
 To see the full list of options, run the program in a command window with no parameters. Here is what currently prints at the time of writing this:
 ```
-Usage: IcarusSaveConverter [action] [prospect] [parts]
+Usage: IcarusSaveConverter [action] [save] [parts]
 
   action    The action to perform. Must be one of the following.
             unpack: Unpack and convert the prospect file to text.
             pack: Convert an unpacked prospect back into a prospect file.
 
-  prospect  The path to a prospect file to either read or create depending
-            on the specified action.
+  save      The path to a prospect or mounts file to either read or create
+            depending on the specified action.
 
   parts     The path to a directory of unpacked prospect parts that will
             either be created or read depending on the specified action.

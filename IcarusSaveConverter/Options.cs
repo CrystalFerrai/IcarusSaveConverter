@@ -25,16 +25,16 @@ namespace IcarusSaveConverter
 
 		public ProgramMode Action { get; }
 
-		public string ProspectPath { get; }
+		public string SavePath { get; }
 
 		public string PartsPath { get; }
 
 		public bool UseActorId { get; }
 
-		private Options(ProgramMode action, string prospectPath, string partsPath, bool useActorId)
+		private Options(ProgramMode action, string savePath, string partsPath, bool useActorId)
 		{
 			Action = action;
-			ProspectPath = prospectPath;
+			SavePath = savePath;
 			PartsPath = partsPath;
 			UseActorId = useActorId;
 		}
@@ -52,7 +52,7 @@ namespace IcarusSaveConverter
 			}
 
 			ProgramMode? action = null;
-			string? prospectPath = null;
+			string? savePath = null;
 			string? partsPath = null;
 
 			bool useActorId = false;
@@ -81,7 +81,7 @@ namespace IcarusSaveConverter
 							}
 							break;
 						case 1:
-							prospectPath = ParsePath(args[i], logger);
+							savePath = ParsePath(args[i], logger);
 							break;
 						case 2:
 							partsPath = ParsePath(args[i], logger);
@@ -92,28 +92,28 @@ namespace IcarusSaveConverter
 				}
 			}
 
-			if (!action.HasValue || prospectPath is null || partsPath is null)
+			if (!action.HasValue || savePath is null || partsPath is null)
 			{
 				logger.Error("Error parsing arguments");
 				return false;
 			}
 
-			options = new(action.Value, prospectPath, partsPath, useActorId);
+			options = new(action.Value, savePath, partsPath, useActorId);
 			return true;
 		}
 
 		public static void PrintUsage(Logger logger)
 		{
 			logger.Information(
-				"Converts an Icarus propect save file to or from a text-based format\n" +
-				"Usage: IcarusSaveConverter [action] [prospect] [parts] [[options]]\n" +
+				"Converts an Icarus propect or mounts save file to or from a text-based format\n" +
+				"Usage: IcarusSaveConverter [action] [save] [parts] [[options]]\n" +
 				"\n" +
 				"  action    The action to perform. Must be one of the following.\n" +
 				"            unpack: Unpack and convert the prospect file to text.\n" +
 				"            pack: Convert an unpacked prospect back into a prospect file.\n" +
 				"\n" +
-				"  prospect  The path to a prospect file to either read or create depending\n" +
-				"            on the specified action.\n" +
+				"  save      The path to a prospect or mounts file to either read or create\n" +
+				"            depending on the specified action.\n" +
 				"\n" +
 				"  parts     The path to a directory of unpacked prospect parts that will\n" +
 				"            either be created or read depending on the specified action.\n" +
